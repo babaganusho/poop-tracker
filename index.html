@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Daily Weigh-In Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  :root {
+    --bg: #f5f3ef;
+    --card: #ffffff;
+    --ink: #2b2620;
+    --muted: #7a7268;
+    --accent: #8a5a2b;
+    --accent-dark: #6e4520;
+    --border: #e5ded3;
+    --danger: #b3413a;
+    --ok: #3a7a4a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .subtitle { color: var(--muted); margin: 0 0 24px; font-size: 0.9rem; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
+  input[type=email], input[type=text], input[type=number], input[type=date], textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 14px;
+    background: #fffdfa;
+    color: var(--ink);
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+  button:hover { background: var(--accent-dark); }
+  button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .msg { font-size: 0.85rem; margin-top: -6px; margin-bottom: 12px; }
+  .msg.error { color: var(--danger); }
+  .msg.ok { color: var(--ok); }
+  .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .tab {
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .topbar { display: flex; justify-content: space-between; align-items: center; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; }
+  tr.me { background: #fbeee0; }
+  .rank { color: var(--muted); width: 28px; }
+  .hidden { display: none !important; }
+  .stat-grid { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+  .stat { flex: 1; min-width: 100px; }
+  .stat .num { font-size: 1.4rem; font-weight: 700; }
+  .stat .lbl { font-size: 0.78rem; color: var(--muted); }
+  .empty { color: var(--muted); font-size: 0.9rem; padding: 8px 0; }
+  #configWarning {
+    background: #fff3cd; border: 1px solid #ffe083; color: #6b5400;
+    padding: 14px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9rem;
+  }
+  #configWarning code { background: #00000010; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <h1>Daily Weigh-In Tracker</h1>
+      <p class="subtitle">Log it daily. See your trend. See how you stack up.</p>
+    </div>
+    <button id="signOutBtn" class="secondary hidden">Sign out</button>
+  </div>
+
+  <div id="configWarning" class="hidden">
+    Supabase isn't configured yet. Open <code>index.html</code>, find the
+    <code>SUPABASE_URL</code> / <code>SUPABASE_ANON_KEY</code> constants near the top of the
+    script, and fill them in with your project's values (Supabase dashboard &rarr; Project
+    Settings &rarr; API). Also run <code>supabase/schema.sql</code> in the SQL Editor first.
+  </div>
+
+  <!-- AUTH SCREEN -->
+  <div id="authScreen" class="card hidden">
+    <h3>Sign in</h3>
+    <p class="subtitle">Enter your email and we'll send you a magic sign-in link. No password needed.</p>
+    <label for="emailInput">Email</label>
+    <input type="email" id="emailInput" placeholder="you@example.com" />
+    <button id="sendLinkBtn">Send magic link</button>
+    <p id="authMsg" class="msg"></p>
+  </div>
+
+  <!-- USERNAME SETUP SCREEN -->
+  <div id="usernameScreen" class="card hidden">
+    <h3>Pick a display name</h3>
+    <p class="subtitle">This is what other users will see on the comparison leaderboard.</p>
+    <label for="usernameInput">Display name</label>
+    <input type="text" id="usernameInput" placeholder="e.g. FiberFiend" maxlength="24" />
+    <button id="saveUsernameBtn">Continue</button>
+    <p id="usernameMsg" class="msg"></p>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="appScreen" class="hidden">
+    <div class="tabs">
+      <div class="tab active" data-tab="log">Log Today</div>
+      <div class="tab" data-tab="history">History</div>
+      <div class="tab" data-tab="compare">Compare</div>
+    </div>
+
+    <!-- LOG TAB -->
+    <div id="tab-log" class="tab-panel">
+      <div class="card">
+        <h3 id="logHeading">Log today's weigh-in</h3>
+        <label for="dateInput">Date</label>
+        <input type="date" id="dateInput" />
+        <label for="weightInput">Weight (grams)</label>
+        <input type="number" id="weightInput" min="1" max="4999" step="1" placeholder="e.g. 180" />
+        <label for="noteInput">Note (optional)</label>
+        <textarea id="noteInput" placeholder="Anything worth remembering..."></textarea>
+        <button id="saveEntryBtn">Save entry</button>
+        <p id="entryMsg" class="msg"></p>
+      </div>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div id="tab-history" class="tab-panel hidden">
+      <div class="card">
+        <div class="stat-grid" id="myStats"></div>
+        <canvas id="historyChart" height="140"></canvas>
+      </div>
+      <div class="card">
+        <h3>All entries</h3>
+        <div id="historyTableWrap"><p class="empty">Loading...</p></div>
+      </div>
+    </div>
+
+    <!-- COMPARE TAB -->
+    <div id="tab-compare" class="tab-panel hidden">
+      <div class="card">
+        <h3>Leaderboard</h3>
+        <p class="subtitle">Ranked by average daily weight (grams). Only aggregates are shared — nobody sees your raw daily entries.</p>
+        <div id="compareTableWrap"><p class="empty">Loading...</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- 1. CONFIGURE THIS ----------------------------------------------------
+// Create a free project at https://supabase.com, run supabase/schema.sql in
+// its SQL Editor, then paste the Project URL and anon public key below
+// (Project Settings -> API).
+const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+// ---------------------------------------------------------------------------
+
+const configured = !SUPABASE_URL.startsWith("YOUR_") && !SUPABASE_ANON_KEY.startsWith("YOUR_");
+const $ = (id) => document.getElementById(id);
+
+if (!configured) {
+  $("configWarning").classList.remove("hidden");
+}
+
+const supabase = configured
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+let currentUser = null;
+let currentProfile = null;
+let historyChart = null;
+
+function todayLocalISO() {
+  const d = new Date();
+  const off = d.getTimezoneOffset();
+  return new Date(d.getTime() - off * 60000).toISOString().slice(0, 10);
+}
+
+function show(el) { el.classList.remove("hidden"); }
+function hide(el) { el.classList.add("hidden"); }
+
+function showScreen(name) {
+  hide($("authScreen")); hide($("usernameScreen")); hide($("appScreen"));
+  hide($("signOutBtn"));
+  if (name === "auth") show($("authScreen"));
+  if (name === "username") show($("usernameScreen"));
+  if (name === "app") { show($("appScreen")); show($("signOutBtn")); }
+}
+
+async function init() {
+  if (!configured) { showScreen("auth"); disableAuthUI(); return; }
+
+  const { data: { session } } = await supabase.auth.getSession();
+  await handleSession(session);
+
+  supabase.auth.onAuthStateChange(async (_event, session) => {
+    await handleSession(session);
+  });
+}
+
+function disableAuthUI() {
+  $("sendLinkBtn").disabled = true;
+  $("authMsg").textContent = "Fix the Supabase config in index.html first.";
+  $("authMsg").className = "msg error";
+}
+
+async function handleSession(session) {
+  if (!session) {
+    currentUser = null; currentProfile = null;
+    showScreen("auth");
+    return;
+  }
+  currentUser = session.user;
+
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", currentUser.id)
+    .maybeSingle();
+
+  if (error) {
+    $("authMsg").textContent = error.message;
+    $("authMsg").className = "msg error";
+    return;
+  }
+
+  if (!profile) {
+    showScreen("username");
+    return;
+  }
+
+  currentProfile = profile;
+  showScreen("app");
+  $("dateInput").value = todayLocalISO();
+  await loadTodayEntry();
+  await refreshActiveTab();
+}
+
+// ---- AUTH -------------------------------------------------------------
+$("sendLinkBtn").addEventListener("click", async () => {
+  const email = $("emailInput").value.trim();
+  const msg = $("authMsg");
+  if (!email) { msg.textContent = "Enter an email address."; msg.className = "msg error"; return; }
+  $("sendLinkBtn").disabled = true;
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: window.location.href },
+  });
+  $("sendLinkBtn").disabled = false;
+  if (error) { msg.textContent = error.message; msg.className = "msg error"; return; }
+  msg.textContent = "Check your email for the sign-in link.";
+  msg.className = "msg ok";
+});
+
+$("signOutBtn").addEventListener("click", async () => {
+  await supabase.auth.signOut();
+});
+
+// ---- USERNAME SETUP -----------------------------------------------------
+$("saveUsernameBtn").addEventListener("click", async () => {
+  const username = $("usernameInput").value.trim();
+  const msg = $("usernameMsg");
+  if (username.length < 2) { msg.textContent = "Pick at least 2 characters."; msg.className = "msg error"; return; }
+
+  const { error } = await supabase
+    .from("profiles")
+    .insert({ id: currentUser.id, username });
+
+  if (error) {
+    msg.textContent = error.code === "23505" ? "That name is taken, try another." : error.message;
+    msg.className = "msg error";
+    return;
+  }
+
+  currentProfile = { id: currentUser.id, username };
+  showScreen("app");
+  $("dateInput").value = todayLocalISO();
+  await loadTodayEntry();
+  await refreshActiveTab();
+});
+
+// ---- TABS -----------------------------------------------------------------
+document.querySelectorAll(".tab").forEach((tabEl) => {
+  tabEl.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach((p) => hide(p));
+    tabEl.classList.add("active");
+    show($("tab-" + tabEl.dataset.tab));
+    refreshActiveTab();
+  });
+});
+
+function activeTabName() {
+  return document.querySelector(".tab.active").dataset.tab;
+}
+
+async function refreshActiveTab() {
+  const tab = activeTabName();
+  if (tab === "history") await loadHistory();
+  if (tab === "compare") await loadCompare();
+}
+
+// ---- LOG TODAY --------------------------------------------------------
+async function loadTodayEntry() {
+  const date = $("dateInput").value || todayLocalISO();
+  const { data } = await supabase
+    .from("entries")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .eq("entry_date", date)
+    .maybeSingle();
+
+  if (data) {
+    $("weightInput").value = data.weight_grams;
+    $("noteInput").value = data.note || "";
+    $("logHeading").textContent = "Update entry for " + date;
+  } else {
+    $("weightInput").value = "";
+    $("noteInput").value = "";
+    $("logHeading").textContent = "Log entry for " + date;
+  }
+}
+
+$("dateInput").addEventListener("change", loadTodayEntry);
+
+$("saveEntryBtn").addEventListener("click", async () => {
+  const msg = $("entryMsg");
+  const date = $("dateInput").value || todayLocalISO();
+  const weight = Number($("weightInput").value);
+  const note = $("noteInput").value.trim() || null;
+
+  if (!weight || weight <= 0) {
+    msg.textContent = "Enter a weight in grams greater than 0.";
+    msg.className = "msg error";
+    return;
+  }
+
+  $("saveEntryBtn").disabled = true;
+  const { error } = await supabase
+    .from("entries")
+    .upsert(
+      { user_id: currentUser.id, entry_date: date, weight_grams: weight, note },
+      { onConflict: "user_id,entry_date" }
+    );
+  $("saveEntryBtn").disabled = false;
+
+  if (error) { msg.textContent = error.message; msg.className = "msg error"; return; }
+  msg.textContent = "Saved.";
+  msg.className = "msg ok";
+  $("logHeading").textContent = "Update entry for " + date;
+});
+
+// ---- HISTORY ------------------------------------------------------------
+async function loadHistory() {
+  const { data, error } = await supabase
+    .from("entries")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .order("entry_date", { ascending: false });
+
+  const wrap = $("historyTableWrap");
+  if (error) { wrap.innerHTML = `<p class="empty">${error.message}</p>`; return; }
+  if (!data.length) {
+    wrap.innerHTML = `<p class="empty">No entries yet. Log your first one in the Today tab.</p>`;
+    renderStats([]);
+    renderChart([]);
+    return;
+  }
+
+  renderStats(data);
+  renderChart([...data].reverse());
+
+  const rows = data.map((e) => `
+    <tr>
+      <td>${e.entry_date}</td>
+      <td>${e.weight_grams} g</td>
+      <td>${e.note ? escapeHtml(e.note) : ""}</td>
+    </tr>
+  `).join("");
+
+  wrap.innerHTML = `
+    <table>
+      <thead><tr><th>Date</th><th>Weight</th><th>Note</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function renderStats(data) {
+  const box = $("myStats");
+  if (!data.length) { box.innerHTML = ""; return; }
+  const weights = data.map((e) => e.weight_grams);
+  const avg = Math.round(weights.reduce((a, b) => a + b, 0) / weights.length);
+  const max = Math.max(...weights);
+  const min = Math.min(...weights);
+  box.innerHTML = `
+    <div class="stat"><div class="num">${data.length}</div><div class="lbl">entries logged</div></div>
+    <div class="stat"><div class="num">${avg} g</div><div class="lbl">average</div></div>
+    <div class="stat"><div class="num">${max} g</div><div class="lbl">heaviest</div></div>
+    <div class="stat"><div class="num">${min} g</div><div class="lbl">lightest</div></div>
+  `;
+}
+
+function renderChart(dataAsc) {
+  const ctx = $("historyChart").getContext("2d");
+  const labels = dataAsc.map((e) => e.entry_date);
+  const values = dataAsc.map((e) => e.weight_grams);
+  if (historyChart) historyChart.destroy();
+  historyChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "Weight (g)",
+        data: values,
+        borderColor: "#8a5a2b",
+        backgroundColor: "#8a5a2b33",
+        tension: 0.25,
+        fill: true,
+      }],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: false } },
+    },
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ---- COMPARE --------------------------------------------------------------
+async function loadCompare() {
+  const { data, error } = await supabase
+    .from("user_stats")
+    .select("*")
+    .order("avg_weight_grams", { ascending: false, nullsFirst: false });
+
+  const wrap = $("compareTableWrap");
+  if (error) { wrap.innerHTML = `<p class="empty">${error.message}</p>`; return; }
+  if (!data.length) { wrap.innerHTML = `<p class="empty">No users yet.</p>`; return; }
+
+  const rows = data.map((u, i) => `
+    <tr class="${u.username === currentProfile.username ? "me" : ""}">
+      <td class="rank">${i + 1}</td>
+      <td>${escapeHtml(u.username)}${u.username === currentProfile.username ? " (you)" : ""}</td>
+      <td>${u.avg_weight_grams != null ? u.avg_weight_grams + " g" : "—"}</td>
+      <td>${u.entries_count}</td>
+      <td>${u.last_entry_date || "—"}</td>
+    </tr>
+  `).join("");
+
+  wrap.innerHTML = `
+    <table>
+      <thead><tr><th>#</th><th>User</th><th>Avg weight</th><th>Entries</th><th>Last logged</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+init();
+</script>
+</body>
+</html>
