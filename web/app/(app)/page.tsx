@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { computeStreak } from "@/lib/streak";
 import { pick } from "@/lib/puns";
 import EntryChart from "./entry-chart";
-import type { Entry } from "@/lib/types";
+import RankBadge from "./rank-badge";
+import type { Entry, Profile } from "@/lib/types";
 
 function todayLocalISO() {
   const d = new Date();
@@ -26,9 +27,9 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username")
+    .select("*")
     .eq("id", user.id)
-    .maybeSingle();
+    .maybeSingle<Profile>();
 
   const { data, error } = await supabase
     .from("entries")
@@ -69,6 +70,32 @@ export default async function ProfilePage() {
           {loggedToday ? pick("loggedTodayBtn") : pick("logTodayBtn")}
         </Link>
       </div>
+
+      {/* Rank */}
+      <div className="mb-4">
+        <RankBadge entriesCount={entries.length} />
+      </div>
+
+      {/* About */}
+      {profile && (profile.age || profile.weight_kg || profile.avg_sitting_minutes) && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {profile.age && (
+            <span className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-stone-600 shadow-sm">
+              🎂 {profile.age} yrs
+            </span>
+          )}
+          {profile.weight_kg && (
+            <span className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-stone-600 shadow-sm">
+              ⚖️ {profile.weight_kg} kg
+            </span>
+          )}
+          {profile.avg_sitting_minutes && (
+            <span className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-stone-600 shadow-sm">
+              ⏱️ {profile.avg_sitting_minutes} min avg sitting
+            </span>
+          )}
+        </div>
+      )}
 
       {error && <p className="mb-4 text-sm text-red-700">{error.message}</p>}
 

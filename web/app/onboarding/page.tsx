@@ -29,7 +29,9 @@ export default async function OnboardingPage() {
       <div className="mb-6 text-center text-5xl">🧻</div>
       <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
         <h2 className="mb-1 font-medium text-stone-900">{pick("usernameHeading")}</h2>
-        <p className="mb-4 text-sm text-stone-500">{pick("usernameSubtitle")}</p>
+        <p className="mb-4 text-sm text-stone-500">
+          {pick("usernameSubtitle")} A few quick details help us set up your profile and rank.
+        </p>
         <OnboardingForm userId={user.id} />
       </div>
     </div>

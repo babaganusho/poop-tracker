@@ -1,6 +1,9 @@
 export type Profile = {
   id: string;
   username: string;
+  age: number | null;
+  weight_kg: number | null;
+  avg_sitting_minutes: number | null;
   created_at: string;
 };
 

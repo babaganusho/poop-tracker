@@ -1,10 +1,14 @@
 -- Run this whole file once in your Supabase project's SQL Editor
 -- (Dashboard -> SQL Editor -> New query -> paste -> Run)
 
--- Profiles: one row per user, holds the public display name
+-- Profiles: one row per user, holds the public display name plus
+-- self-reported profile stats (weight is optional, age/sitting time are not)
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   username text unique not null,
+  age integer check (age > 0 and age < 150),
+  weight_kg numeric check (weight_kg > 0 and weight_kg < 500),
+  avg_sitting_minutes integer check (avg_sitting_minutes > 0 and avg_sitting_minutes <= 300),
   created_at timestamptz not null default now()
 );
 
