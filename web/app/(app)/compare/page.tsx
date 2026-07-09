@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { pick } from "@/lib/puns";
 import type { UserStats } from "@/lib/types";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
@@ -28,11 +29,8 @@ export default async function ComparePage() {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="text-base font-semibold text-stone-900">🏆 Leaderboard</h2>
-        <p className="mt-1 text-sm text-stone-500">
-          Ranked by average daily weight. Only aggregates are shared — nobody sees your raw daily
-          entries.
-        </p>
+        <h2 className="text-base font-semibold text-stone-900">{pick("leaderboardHeading")}</h2>
+        <p className="mt-1 text-sm text-stone-500">{pick("leaderboardSubtitle")}</p>
       </div>
 
       {error ? (
@@ -40,7 +38,7 @@ export default async function ComparePage() {
       ) : rows.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-6 text-center">
           <div className="mb-2 text-3xl">🏆</div>
-          <p className="text-sm text-stone-600">No users yet.</p>
+          <p className="text-sm text-stone-600">{pick("noUsersMsg")}</p>
         </div>
       ) : (
         <ul className="space-y-2">
@@ -59,7 +57,7 @@ export default async function ComparePage() {
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium text-stone-900">
                     {u.username}
-                    {isMe && " (you)"}
+                    {isMe && pick("youSuffix")}
                   </div>
                   <div className="text-xs text-stone-500">
                     {u.entries_count} entries · last {u.last_entry_date ?? "—"}

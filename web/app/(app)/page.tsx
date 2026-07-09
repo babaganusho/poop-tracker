@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { computeStreak } from "@/lib/streak";
+import { pick } from "@/lib/puns";
 import EntryChart from "./entry-chart";
 import type { Entry } from "@/lib/types";
 
@@ -55,7 +56,7 @@ export default async function ProfilePage() {
         </div>
         <div className="min-w-0 flex-1">
           <div className="truncate font-semibold text-stone-900">{profile?.username ?? "You"}</div>
-          <div className="text-sm text-stone-500">{entries.length} entries logged</div>
+          <div className="text-sm text-stone-500">{entries.length} {pick("entriesLoggedLabel")}</div>
         </div>
         <Link
           href="/log"
@@ -65,7 +66,7 @@ export default async function ProfilePage() {
               : "bg-amber-800 text-white hover:bg-amber-900"
           }`}
         >
-          {loggedToday ? "✅ Logged" : "➕ Log today"}
+          {loggedToday ? pick("loggedTodayBtn") : pick("logTodayBtn")}
         </Link>
       </div>
 
@@ -74,29 +75,27 @@ export default async function ProfilePage() {
       {entries.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-6 text-center">
           <div className="mb-2 text-3xl">🚽</div>
-          <p className="text-sm text-stone-600">
-            No entries yet. Tap <strong>Log today</strong> to record your first one.
-          </p>
+          <p className="text-sm text-stone-600">{pick("noEntriesMsg")}</p>
         </div>
       ) : (
         <>
           {/* Stats */}
           <div className="mb-4 grid grid-cols-2 gap-3">
-            <StatCard emoji="🔥" label="day streak" value={String(streak)} />
-            <StatCard emoji="📊" label="average" value={`${avg} g`} />
-            <StatCard emoji="⬆️" label="heaviest" value={`${max} g`} />
-            <StatCard emoji="⬇️" label="lightest" value={`${min} g`} />
+            <StatCard emoji="🔥" label={pick("streakLabel")} value={String(streak)} />
+            <StatCard emoji="📊" label={pick("averageLabel")} value={`${avg} g`} />
+            <StatCard emoji="⬆️" label={pick("heaviestLabel")} value={`${max} g`} />
+            <StatCard emoji="⬇️" label={pick("lightestLabel")} value={`${min} g`} />
           </div>
 
           {/* Chart */}
           <div className="mb-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
-            <h2 className="mb-3 text-sm font-semibold text-stone-900">📈 Your trend</h2>
+            <h2 className="mb-3 text-sm font-semibold text-stone-900">{pick("trendHeading")}</h2>
             <EntryChart entries={[...entries].reverse()} />
           </div>
 
           {/* Full log */}
           <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
-            <h2 className="mb-3 text-sm font-semibold text-stone-900">🧾 Full log</h2>
+            <h2 className="mb-3 text-sm font-semibold text-stone-900">{pick("fullLogHeading")}</h2>
             <ul className="divide-y divide-stone-100">
               {entries.map((e, i) => (
                 <li key={e.id}>

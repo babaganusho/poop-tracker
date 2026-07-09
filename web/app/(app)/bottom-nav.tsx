@@ -2,15 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const TABS = [
-  { href: "/", label: "Profile", emoji: "💩" },
-  { href: "/log", label: "Log", emoji: "➕" },
-  { href: "/compare", label: "Compare", emoji: "🏆" },
-];
+import { usePunned } from "@/lib/puns";
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const profileLabel = usePunned("profileLabel");
+  const logLabel = usePunned("logLabel");
+  const compareLabel = usePunned("compareLabel");
+
+  const TABS = [
+    { href: "/", label: profileLabel, emoji: "💩" },
+    { href: "/log", label: logLabel, emoji: "➕" },
+    { href: "/compare", label: compareLabel, emoji: "🏆" },
+  ];
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-stone-200 bg-white/95 backdrop-blur pb-[env(safe-area-inset-bottom)]">

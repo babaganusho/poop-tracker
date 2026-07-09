@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { pick } from "@/lib/puns";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,10 +13,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Daily Weigh-In Tracker",
-  description: "Log a daily weight reading and compare with other users.",
-};
+export const dynamic = "force-dynamic";
+
+export function generateMetadata(): Metadata {
+  return {
+    title: pick("appTitle"),
+    description: "Log a daily weight reading and compare with other users.",
+  };
+}
 
 export default function RootLayout({
   children,

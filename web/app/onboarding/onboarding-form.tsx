@@ -3,8 +3,12 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { usePunned } from "@/lib/puns";
 
 export default function OnboardingForm({ userId }: { userId: string }) {
+  const usernamePlaceholder = usePunned("usernamePlaceholder");
+  const continueBtn = usePunned("continueBtn");
+  const displayNameLabel = usePunned("displayNameLabel");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +42,7 @@ export default function OnboardingForm({ userId }: { userId: string }) {
   return (
     <form onSubmit={onSubmit}>
       <label htmlFor="username" className="mb-1 block text-sm text-stone-500">
-        Display name
+        {displayNameLabel}
       </label>
       <input
         id="username"
@@ -47,7 +51,7 @@ export default function OnboardingForm({ userId }: { userId: string }) {
         maxLength={24}
         value={username}
         onChange={(e) => setUsername(e.target.value)}
-        placeholder="e.g. FiberFiend"
+        placeholder={usernamePlaceholder}
         className="mb-4 w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-3 text-base text-stone-900 outline-none focus:border-amber-700"
       />
       <button
@@ -55,7 +59,7 @@ export default function OnboardingForm({ userId }: { userId: string }) {
         disabled={loading}
         className="w-full rounded-xl bg-amber-800 px-4 py-3 text-base font-semibold text-white hover:bg-amber-900 disabled:opacity-50"
       >
-        {loading ? "Saving..." : "Continue →"}
+        {loading ? "Saving..." : continueBtn}
       </button>
       {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
     </form>

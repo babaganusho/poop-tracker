@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { usePunned } from "@/lib/puns";
 import type { Entry } from "@/lib/types";
 
 export default function EntryForm({
@@ -15,6 +16,17 @@ export default function EntryForm({
   initialDate: string;
   initialEntry: Entry | null;
 }) {
+  const newEntryHeading = usePunned("newEntryHeading");
+  const updateEntryHeading = usePunned("updateEntryHeading");
+  const dateLabel = usePunned("dateLabel");
+  const profileLabel = usePunned("profileLabel");
+  const weightLabel = usePunned("weightLabel");
+  const weightPlaceholder = usePunned("weightPlaceholder");
+  const noteLabel = usePunned("noteLabel");
+  const notePlaceholder = usePunned("notePlaceholder");
+  const saveEntryBtn = usePunned("saveEntryBtn");
+  const savingBtn = usePunned("savingBtn");
+  const savedMsg = usePunned("savedMsg");
   const [date, setDate] = useState(initialDate);
   const [weight, setWeight] = useState(initialEntry ? String(initialEntry.weight_grams) : "");
   const [note, setNote] = useState(initialEntry?.note ?? "");
@@ -63,7 +75,7 @@ export default function EntryForm({
       return;
     }
     setExisted(true);
-    setStatus({ type: "ok", msg: "Saved! 🎉" });
+    setStatus({ type: "ok", msg: savedMsg });
     router.refresh();
   }
 
@@ -71,15 +83,15 @@ export default function EntryForm({
     <form onSubmit={onSubmit}>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-semibold text-stone-900">
-          {existed ? `✏️ Update entry` : `💩 New entry`}
+          {existed ? updateEntryHeading : newEntryHeading}
         </h2>
         <Link href="/" className="text-sm text-amber-800">
-          ← Profile
+          ← {profileLabel}
         </Link>
       </div>
 
       <label htmlFor="date" className="mb-1 block text-sm text-stone-500">
-        📅 Date
+        {dateLabel}
       </label>
       <input
         id="date"
@@ -91,7 +103,7 @@ export default function EntryForm({
       />
 
       <label htmlFor="weight" className="mb-1 block text-sm text-stone-500">
-        ⚖️ Weight (grams)
+        {weightLabel}
       </label>
       <input
         id="weight"
@@ -102,18 +114,18 @@ export default function EntryForm({
         step={1}
         value={weight}
         onChange={(e) => setWeight(e.target.value)}
-        placeholder="e.g. 180"
+        placeholder={weightPlaceholder}
         className="mb-4 w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-3 text-base text-stone-900 outline-none focus:border-amber-700"
       />
 
       <label htmlFor="note" className="mb-1 block text-sm text-stone-500">
-        📝 Note (optional)
+        {noteLabel}
       </label>
       <textarea
         id="note"
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        placeholder="Anything worth remembering..."
+        placeholder={notePlaceholder}
         className="mb-4 min-h-[70px] w-full resize-y rounded-xl border border-stone-200 bg-stone-50 px-3 py-3 text-base text-stone-900 outline-none focus:border-amber-700"
       />
 
@@ -122,7 +134,7 @@ export default function EntryForm({
         disabled={loading}
         className="w-full rounded-xl bg-amber-800 px-4 py-3 text-base font-semibold text-white hover:bg-amber-900 disabled:opacity-50"
       >
-        {loading ? "Saving..." : "💾 Save entry"}
+        {loading ? savingBtn : saveEntryBtn}
       </button>
 
       {status && (

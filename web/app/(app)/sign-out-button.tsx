@@ -3,10 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { usePunned } from "@/lib/puns";
 
 export default function SignOutButton() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const signOutLabel = usePunned("signOut");
+  const signingOutLabel = usePunned("signingOut");
 
   async function signOut() {
     setLoading(true);
@@ -22,7 +25,7 @@ export default function SignOutButton() {
       disabled={loading}
       className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm text-amber-800 hover:bg-stone-50 disabled:opacity-50"
     >
-      {loading ? "Signing out..." : "Sign out"}
+      {loading ? signingOutLabel : signOutLabel}
     </button>
   );
 }
