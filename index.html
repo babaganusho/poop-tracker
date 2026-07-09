@@ -96,8 +96,8 @@
 <div class="wrap">
   <div class="topbar">
     <div>
-      <h1>Daily Weigh-In Tracker</h1>
-      <p class="subtitle">Log it daily. See your trend. See how you stack up.</p>
+      <h1 id="pageHeading">Daily Weigh-In Tracker</h1>
+      <p class="subtitle" id="pageSubtitle">Log it daily. See your trend. See how you stack up.</p>
     </div>
     <button id="signOutBtn" class="secondary hidden">Sign out</button>
   </div>
@@ -111,8 +111,8 @@
 
   <!-- AUTH SCREEN -->
   <div id="authScreen" class="card hidden">
-    <h3>Sign in</h3>
-    <p class="subtitle">Enter your email and we'll send you a magic sign-in link. No password needed.</p>
+    <h3 id="authHeading">Sign in</h3>
+    <p class="subtitle" id="authSubtitle">Enter your email and we'll send you a magic sign-in link. No password needed.</p>
     <label for="emailInput">Email</label>
     <input type="email" id="emailInput" placeholder="you@example.com" />
     <button id="sendLinkBtn">Send magic link</button>
@@ -121,8 +121,8 @@
 
   <!-- USERNAME SETUP SCREEN -->
   <div id="usernameScreen" class="card hidden">
-    <h3>Pick a display name</h3>
-    <p class="subtitle">This is what other users will see on the comparison leaderboard.</p>
+    <h3 id="usernameHeading">Pick a display name</h3>
+    <p class="subtitle" id="usernameSubtitle">This is what other users will see on the comparison leaderboard.</p>
     <label for="usernameInput">Display name</label>
     <input type="text" id="usernameInput" placeholder="e.g. FiberFiend" maxlength="24" />
     <button id="saveUsernameBtn">Continue</button>
@@ -143,9 +143,9 @@
         <h3 id="logHeading">Log today's weigh-in</h3>
         <label for="dateInput">Date</label>
         <input type="date" id="dateInput" />
-        <label for="weightInput">Weight (grams)</label>
+        <label for="weightInput" id="weightLabel">Weight (grams)</label>
         <input type="number" id="weightInput" min="1" max="4999" step="1" placeholder="e.g. 180" />
-        <label for="noteInput">Note (optional)</label>
+        <label for="noteInput" id="noteLabel">Note (optional)</label>
         <textarea id="noteInput" placeholder="Anything worth remembering..."></textarea>
         <button id="saveEntryBtn">Save entry</button>
         <p id="entryMsg" class="msg"></p>
@@ -159,17 +159,17 @@
         <canvas id="historyChart" height="140"></canvas>
       </div>
       <div class="card">
-        <h3>All entries</h3>
-        <div id="historyTableWrap"><p class="empty">Loading...</p></div>
+        <h3 id="allEntriesHeading">All entries</h3>
+        <div id="historyTableWrap"><p class="empty" id="historyLoading">Loading...</p></div>
       </div>
     </div>
 
     <!-- COMPARE TAB -->
     <div id="tab-compare" class="tab-panel hidden">
       <div class="card">
-        <h3>Leaderboard</h3>
-        <p class="subtitle">Ranked by average daily weight (grams). Only aggregates are shared — nobody sees your raw daily entries.</p>
-        <div id="compareTableWrap"><p class="empty">Loading...</p></div>
+        <h3 id="leaderboardHeading">Leaderboard</h3>
+        <p class="subtitle" id="leaderboardSubtitle">Ranked by average daily weight (grams). Only aggregates are shared — nobody sees your raw daily entries.</p>
+        <div id="compareTableWrap"><p class="empty" id="compareLoading">Loading...</p></div>
       </div>
     </div>
   </div>
@@ -186,6 +186,103 @@ const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
 const configured = !SUPABASE_URL.startsWith("YOUR_") && !SUPABASE_ANON_KEY.startsWith("YOUR_");
 const $ = (id) => document.getElementById(id);
+
+// ---- POOP PUN RANDOMIZER ---------------------------------------------
+const PUNS = {
+  title: ["Daily Weigh-In Tracker", "The Daily Dump Log", "Poop Tracker Pro", "Log Your Loot", "The Number Two Notebook", "Stool Stats Central", "Dump Truck Diaries", "The Brown Chronicle", "Throne Room Analytics"],
+  subtitle: [
+    "Log it daily. See your trend. See how you stack up.",
+    "Drop your data. Watch your progress flow.",
+    "Because what goes in must come out — and get logged.",
+    "Every load counts. Track it here.",
+    "Keep tabs on your tail-end totals.",
+    "Number two, tracked to the gram.",
+  ],
+  signOut: ["Sign out", "Flush & sign out", "Peace out", "Wipe & leave"],
+  authHeading: ["Sign in", "Take a seat & sign in", "Enter the throne room", "Sign in, no straining"],
+  authSubtitle: [
+    "Enter your email and we'll send you a magic sign-in link. No password needed.",
+    "Drop your email below — we'll slide a link right into your inbox. No password required.",
+    "Give us your email. We'll send a magic link, no straining necessary.",
+  ],
+  emailPlaceholder: ["you@example.com", "you@throneroom.com", "you@dailydump.com"],
+  sendLinkBtn: ["Send magic link", "Drop the link", "Release the link", "Squeeze out a link"],
+  usernameHeading: ["Pick a display name", "Pick your poop name", "Choose your throne handle", "Name your number two"],
+  usernameSubtitle: [
+    "This is what other users will see on the comparison leaderboard.",
+    "This is what other stackers will see on the leaderboard.",
+    "Pick a name the other logs will recognize on the leaderboard.",
+  ],
+  usernamePlaceholder: ["e.g. FiberFiend", "e.g. LogLegend", "e.g. ThroneRuler", "e.g. DumpChampion", "e.g. PlopStar"],
+  continueBtn: ["Continue", "Lock it in", "Commit to the bowl", "Take the seat"],
+  tabLog: ["Log Today", "Drop Today's Load", "Today's Deposit", "Log The Damage"],
+  tabHistory: ["History", "The Vault", "Past Drops", "Log Book"],
+  tabCompare: ["Compare", "Leaderboard", "Stack Rankings", "Who's #1 (at #2)"],
+  logVerbNew: ["Log entry for", "Drop your log for", "Record today's deposit for", "Log the damage for"],
+  logVerbUpdate: ["Update entry for", "Update your deposit for", "Revise the log for", "Amend the damage for"],
+  weightLabel: ["Weight (grams)", "Payload (grams)", "Mass of the moment (grams)", "Deposit weight (grams)"],
+  weightPlaceholder: ["e.g. 180", "e.g. 180 (go big)", "e.g. 180g of glory"],
+  noteLabel: ["Note (optional)", "Commentary (optional)", "Post-game notes (optional)"],
+  notePlaceholder: ["Anything worth remembering...", "How'd it feel? Any regrets?", "Log the details, spare no fiber"],
+  saveBtn: ["Save entry", "Lock in the log", "Seal the deal", "Commit to the bowl"],
+  savedMsg: ["Saved.", "Logged and locked.", "In the books.", "Deposit confirmed.", "Flushed with success."],
+  linkSentMsg: ["Check your email for the sign-in link.", "Link's in your inbox. Go check.", "Sent! Check your email."],
+  allEntriesHeading: ["All entries", "The full log", "Complete history", "Every drop on record"],
+  statEntries: ["entries logged", "drops recorded", "deposits made", "logs on the books"],
+  statAverage: ["average", "average haul", "typical drop"],
+  statHeaviest: ["heaviest", "biggest drop", "personal record", "heavyweight champ"],
+  statLightest: ["lightest", "smallest drop", "featherweight"],
+  noEntriesMsg: ["No entries yet. Log your first one in the Today tab.", "Nothing logged yet — get in there.", "The log book is empty. Time to change that."],
+  colDate: ["Date", "When"],
+  colWeight: ["Weight", "Payload"],
+  colNote: ["Note", "Details"],
+  leaderboardHeading: ["Leaderboard", "The Stack Rankings", "Hall of Fame", "Top of the Heap"],
+  leaderboardSubtitle: [
+    "Ranked by average daily weight (grams). Only aggregates are shared — nobody sees your raw daily entries.",
+    "Ranked by average output. Your raw data stays private — only the big numbers get shared.",
+  ],
+  noUsersMsg: ["No users yet.", "Nobody's logged in yet. Be the first."],
+  colUser: ["User", "Contender"],
+  colAvgWeight: ["Avg weight", "Average Haul"],
+  colEntries: ["Entries", "Drops"],
+  colLastLogged: ["Last logged", "Last Seen"],
+  youSuffix: [" (you)", " (that's you)", " (yup, you)"],
+  loading: ["Loading...", "Fetching the goods...", "Digging up the data..."],
+};
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+const punText = {};
+Object.keys(PUNS).forEach((key) => { punText[key] = pick(PUNS[key]); });
+
+function applyPuns() {
+  document.title = punText.title;
+  $("pageHeading").textContent = punText.title;
+  $("pageSubtitle").textContent = punText.subtitle;
+  $("signOutBtn").textContent = punText.signOut;
+  $("authHeading").textContent = punText.authHeading;
+  $("authSubtitle").textContent = punText.authSubtitle;
+  $("emailInput").placeholder = punText.emailPlaceholder;
+  $("sendLinkBtn").textContent = punText.sendLinkBtn;
+  $("usernameHeading").textContent = punText.usernameHeading;
+  $("usernameSubtitle").textContent = punText.usernameSubtitle;
+  $("usernameInput").placeholder = punText.usernamePlaceholder;
+  $("saveUsernameBtn").textContent = punText.continueBtn;
+  document.querySelector('.tab[data-tab="log"]').textContent = punText.tabLog;
+  document.querySelector('.tab[data-tab="history"]').textContent = punText.tabHistory;
+  document.querySelector('.tab[data-tab="compare"]').textContent = punText.tabCompare;
+  $("weightLabel").textContent = punText.weightLabel;
+  $("weightInput").placeholder = punText.weightPlaceholder;
+  $("noteLabel").textContent = punText.noteLabel;
+  $("noteInput").placeholder = punText.notePlaceholder;
+  $("saveEntryBtn").textContent = punText.saveBtn;
+  $("allEntriesHeading").textContent = punText.allEntriesHeading;
+  $("historyLoading").textContent = punText.loading;
+  $("leaderboardHeading").textContent = punText.leaderboardHeading;
+  $("leaderboardSubtitle").textContent = punText.leaderboardSubtitle;
+  $("compareLoading").textContent = punText.loading;
+}
+applyPuns();
 
 if (!configured) {
   $("configWarning").classList.remove("hidden");
@@ -277,7 +374,7 @@ $("sendLinkBtn").addEventListener("click", async () => {
   });
   $("sendLinkBtn").disabled = false;
   if (error) { msg.textContent = error.message; msg.className = "msg error"; return; }
-  msg.textContent = "Check your email for the sign-in link.";
+  msg.textContent = punText.linkSentMsg;
   msg.className = "msg ok";
 });
 
@@ -342,11 +439,11 @@ async function loadTodayEntry() {
   if (data) {
     $("weightInput").value = data.weight_grams;
     $("noteInput").value = data.note || "";
-    $("logHeading").textContent = "Update entry for " + date;
+    $("logHeading").textContent = punText.logVerbUpdate + " " + date;
   } else {
     $("weightInput").value = "";
     $("noteInput").value = "";
-    $("logHeading").textContent = "Log entry for " + date;
+    $("logHeading").textContent = punText.logVerbNew + " " + date;
   }
 }
 
@@ -374,9 +471,9 @@ $("saveEntryBtn").addEventListener("click", async () => {
   $("saveEntryBtn").disabled = false;
 
   if (error) { msg.textContent = error.message; msg.className = "msg error"; return; }
-  msg.textContent = "Saved.";
+  msg.textContent = punText.savedMsg;
   msg.className = "msg ok";
-  $("logHeading").textContent = "Update entry for " + date;
+  $("logHeading").textContent = punText.logVerbUpdate + " " + date;
 });
 
 // ---- HISTORY ------------------------------------------------------------
@@ -390,7 +487,7 @@ async function loadHistory() {
   const wrap = $("historyTableWrap");
   if (error) { wrap.innerHTML = `<p class="empty">${error.message}</p>`; return; }
   if (!data.length) {
-    wrap.innerHTML = `<p class="empty">No entries yet. Log your first one in the Today tab.</p>`;
+    wrap.innerHTML = `<p class="empty">${punText.noEntriesMsg}</p>`;
     renderStats([]);
     renderChart([]);
     return;
@@ -409,7 +506,7 @@ async function loadHistory() {
 
   wrap.innerHTML = `
     <table>
-      <thead><tr><th>Date</th><th>Weight</th><th>Note</th></tr></thead>
+      <thead><tr><th>${punText.colDate}</th><th>${punText.colWeight}</th><th>${punText.colNote}</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   `;
@@ -423,10 +520,10 @@ function renderStats(data) {
   const max = Math.max(...weights);
   const min = Math.min(...weights);
   box.innerHTML = `
-    <div class="stat"><div class="num">${data.length}</div><div class="lbl">entries logged</div></div>
-    <div class="stat"><div class="num">${avg} g</div><div class="lbl">average</div></div>
-    <div class="stat"><div class="num">${max} g</div><div class="lbl">heaviest</div></div>
-    <div class="stat"><div class="num">${min} g</div><div class="lbl">lightest</div></div>
+    <div class="stat"><div class="num">${data.length}</div><div class="lbl">${punText.statEntries}</div></div>
+    <div class="stat"><div class="num">${avg} g</div><div class="lbl">${punText.statAverage}</div></div>
+    <div class="stat"><div class="num">${max} g</div><div class="lbl">${punText.statHeaviest}</div></div>
+    <div class="stat"><div class="num">${min} g</div><div class="lbl">${punText.statLightest}</div></div>
   `;
 }
 
@@ -471,12 +568,12 @@ async function loadCompare() {
 
   const wrap = $("compareTableWrap");
   if (error) { wrap.innerHTML = `<p class="empty">${error.message}</p>`; return; }
-  if (!data.length) { wrap.innerHTML = `<p class="empty">No users yet.</p>`; return; }
+  if (!data.length) { wrap.innerHTML = `<p class="empty">${punText.noUsersMsg}</p>`; return; }
 
   const rows = data.map((u, i) => `
     <tr class="${u.username === currentProfile.username ? "me" : ""}">
       <td class="rank">${i + 1}</td>
-      <td>${escapeHtml(u.username)}${u.username === currentProfile.username ? " (you)" : ""}</td>
+      <td>${escapeHtml(u.username)}${u.username === currentProfile.username ? punText.youSuffix : ""}</td>
       <td>${u.avg_weight_grams != null ? u.avg_weight_grams + " g" : "—"}</td>
       <td>${u.entries_count}</td>
       <td>${u.last_entry_date || "—"}</td>
@@ -485,7 +582,7 @@ async function loadCompare() {
 
   wrap.innerHTML = `
     <table>
-      <thead><tr><th>#</th><th>User</th><th>Avg weight</th><th>Entries</th><th>Last logged</th></tr></thead>
+      <thead><tr><th>#</th><th>${punText.colUser}</th><th>${punText.colAvgWeight}</th><th>${punText.colEntries}</th><th>${punText.colLastLogged}</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   `;
