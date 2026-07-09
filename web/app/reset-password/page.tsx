@@ -16,10 +16,29 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setHasSession(Boolean(session));
-      setChecking(false);
+    let settled = false;
+
+    // The recovery link lands here with tokens in the URL; supabase-js parses
+    // them and fires this listener once a session is established. This can
+    // take a moment, so we wait briefly rather than checking getSession() once.
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        settled = true;
+        setHasSession(true);
+        setChecking(false);
+      }
     });
+
+    const timeout = setTimeout(() => {
+      if (!settled) setChecking(false);
+    }, 3000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   async function onSubmit(e: FormEvent) {
