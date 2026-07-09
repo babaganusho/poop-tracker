@@ -56,7 +56,12 @@ export default async function ProfilePage() {
           💩
         </div>
         <div className="min-w-0 flex-1">
-          <div className="truncate font-semibold text-stone-900">{profile?.username ?? "You"}</div>
+          <div className="flex items-center gap-1.5">
+            <span className="truncate font-semibold text-stone-900">{profile?.username ?? "You"}</span>
+            <Link href="/edit-profile" className="shrink-0 text-sm text-amber-800" aria-label="Edit profile">
+              ✏️
+            </Link>
+          </div>
           <div className="text-sm text-stone-500">{entries.length} {pick("entriesLoggedLabel")}</div>
         </div>
         <Link
