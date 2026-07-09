@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import AvatarUpload from "./avatar-upload";
 import EditProfileForm from "./edit-profile-form";
 import type { Profile } from "@/lib/types";
 
@@ -20,6 +21,7 @@ export default async function EditProfilePage() {
 
   return (
     <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+      <AvatarUpload userId={user.id} avatarUrl={profile.avatar_url} />
       <EditProfileForm profile={profile} />
     </div>
   );

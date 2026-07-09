@@ -52,8 +52,13 @@ export default async function ProfilePage() {
     <div>
       {/* Profile header */}
       <div className="mb-4 flex items-center gap-3 rounded-2xl border border-amber-200 bg-white p-4 shadow-sm">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-amber-100 text-3xl">
-          💩
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-amber-100 text-3xl">
+          {profile?.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+          ) : (
+            "💩"
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">

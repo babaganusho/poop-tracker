@@ -4,6 +4,7 @@ export type Profile = {
   age: number | null;
   weight_kg: number | null;
   avg_sitting_minutes: number | null;
+  avatar_url: string | null;
   created_at: string;
 };
 
