@@ -1,20 +1,21 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { usePunned } from "@/lib/use-punned";
+import type { Profile } from "@/lib/types";
 
-export default function OnboardingForm({ userId }: { userId: string }) {
-  const usernamePlaceholder = usePunned("usernamePlaceholder");
-  const continueBtn = usePunned("continueBtn");
-  const displayNameLabel = usePunned("displayNameLabel");
-  const [username, setUsername] = useState("");
-  const [age, setAge] = useState("");
-  const [weight, setWeight] = useState("");
-  const [avgSitting, setAvgSitting] = useState("");
+export default function EditProfileForm({ profile }: { profile: Profile }) {
+  const [username, setUsername] = useState(profile.username);
+  const [age, setAge] = useState(profile.age != null ? String(profile.age) : "");
+  const [weight, setWeight] = useState(profile.weight_kg != null ? String(profile.weight_kg) : "");
+  const [avgSitting, setAvgSitting] = useState(
+    profile.avg_sitting_minutes != null ? String(profile.avg_sitting_minutes) : ""
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
   const router = useRouter();
 
   async function onSubmit(e: FormEvent) {
@@ -45,29 +46,39 @@ export default function OnboardingForm({ userId }: { userId: string }) {
 
     setLoading(true);
     setError(null);
+    setStatus(null);
     const supabase = createClient();
-    const { error: insertError } = await supabase.from("profiles").insert({
-      id: userId,
-      username: trimmed,
-      age: ageNum,
-      weight_kg: weightNum,
-      avg_sitting_minutes: sittingNum,
-    });
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({
+        username: trimmed,
+        age: ageNum,
+        weight_kg: weightNum,
+        avg_sitting_minutes: sittingNum,
+      })
+      .eq("id", profile.id);
     setLoading(false);
 
-    if (insertError) {
-      setError(insertError.code === "23505" ? "That name is taken, try another." : insertError.message);
+    if (updateError) {
+      setError(updateError.code === "23505" ? "That name is taken, try another." : updateError.message);
       return;
     }
 
-    router.push("/");
+    setStatus("Saved! 🎉");
     router.refresh();
   }
 
   return (
     <form onSubmit={onSubmit}>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-base font-semibold text-stone-900">✏️ Edit profile</h2>
+        <Link href="/" className="text-sm text-amber-800">
+          ← Profile
+        </Link>
+      </div>
+
       <label htmlFor="username" className="mb-1 block text-sm text-stone-500">
-        {displayNameLabel}
+        Nickname
       </label>
       <input
         id="username"
@@ -76,7 +87,6 @@ export default function OnboardingForm({ userId }: { userId: string }) {
         maxLength={24}
         value={username}
         onChange={(e) => setUsername(e.target.value)}
-        placeholder={usernamePlaceholder}
         className="mb-4 w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-3 text-base text-stone-900 outline-none focus:border-amber-700"
       />
 
@@ -92,7 +102,6 @@ export default function OnboardingForm({ userId }: { userId: string }) {
         max={149}
         value={age}
         onChange={(e) => setAge(e.target.value)}
-        placeholder="e.g. 32"
         className="mb-4 w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-3 text-base text-stone-900 outline-none focus:border-amber-700"
       />
 
@@ -123,7 +132,6 @@ export default function OnboardingForm({ userId }: { userId: string }) {
         max={300}
         value={avgSitting}
         onChange={(e) => setAvgSitting(e.target.value)}
-        placeholder="e.g. 10"
         className="mb-4 w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-3 text-base text-stone-900 outline-none focus:border-amber-700"
       />
 
@@ -132,8 +140,10 @@ export default function OnboardingForm({ userId }: { userId: string }) {
         disabled={loading}
         className="w-full rounded-xl bg-amber-800 px-4 py-3 text-base font-semibold text-white hover:bg-amber-900 disabled:opacity-50"
       >
-        {loading ? "Saving..." : continueBtn}
+        {loading ? "Saving..." : "💾 Save changes"}
       </button>
+
+      {status && <p className="mt-3 text-sm text-green-700">{status}</p>}
       {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
     </form>
   );

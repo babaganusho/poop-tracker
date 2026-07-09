@@ -15,3 +15,46 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes rank-pop {
+  0% {
+    transform: scale(0.5) rotate(-8deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08) rotate(3deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes rank-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0px 0px var(--rank-glow-color, rgba(217, 119, 6, 0.5));
+  }
+  50% {
+    box-shadow: 0 0 18px 4px var(--rank-glow-color, rgba(217, 119, 6, 0.5));
+  }
+}
+
+@keyframes rank-shine {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-rank-pop {
+  animation: rank-pop 0.6s ease-out;
+}
+
+.animate-rank-glow {
+  animation: rank-glow 2.2s ease-in-out infinite;
+}
+
+.animate-rank-shine {
+  animation: rank-shine 6s linear infinite;
+}

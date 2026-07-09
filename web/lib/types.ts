@@ -1,6 +1,10 @@
 export type Profile = {
   id: string;
   username: string;
+  age: number | null;
+  weight_kg: number | null;
+  avg_sitting_minutes: number | null;
+  avatar_url: string | null;
   created_at: string;
 };
 
@@ -15,6 +19,7 @@ export type Entry = {
 
 export type UserStats = {
   username: string;
+  avatar_url: string | null;
   entries_count: number;
   avg_weight_grams: number | null;
   max_weight_grams: number | null;

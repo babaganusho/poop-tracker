@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -131,6 +132,12 @@ export default function LoginPage() {
             {loading ? pleaseWait : mode === "signup" ? submitSignUp : submitSignIn}
           </button>
         </form>
+
+        {mode === "signin" && (
+          <Link href="/forgot-password" className="mt-3 block text-center text-sm text-amber-800">
+            Forgot password?
+          </Link>
+        )}
 
         {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
       </div>
