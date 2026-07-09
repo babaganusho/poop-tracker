@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { usePunned } from "@/lib/puns";
+import { usePunned } from "@/lib/use-punned";
 
 export default function LoginPage() {
   const appTitle = usePunned("appTitle");

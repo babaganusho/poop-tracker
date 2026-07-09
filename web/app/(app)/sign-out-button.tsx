@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { usePunned } from "@/lib/puns";
+import { usePunned } from "@/lib/use-punned";
 
 export default function SignOutButton() {
   const [loading, setLoading] = useState(false);

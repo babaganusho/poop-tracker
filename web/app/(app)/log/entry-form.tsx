@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { usePunned } from "@/lib/puns";
+import { usePunned } from "@/lib/use-punned";
 import type { Entry } from "@/lib/types";
 
 export default function EntryForm({

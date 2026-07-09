@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { usePunned } from "@/lib/puns";
+import { usePunned } from "@/lib/use-punned";
 
 export default function BottomNav() {
   const pathname = usePathname();

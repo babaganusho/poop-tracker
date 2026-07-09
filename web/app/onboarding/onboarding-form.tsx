@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { usePunned } from "@/lib/puns";
+import { usePunned } from "@/lib/use-punned";
 
 export default function OnboardingForm({ userId }: { userId: string }) {
   const usernamePlaceholder = usePunned("usernamePlaceholder");
