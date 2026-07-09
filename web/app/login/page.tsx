@@ -5,8 +5,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { usePunned } from "@/lib/use-punned";
 
 export default function LoginPage() {
+  const appTitle = usePunned("appTitle");
+  const tagline = usePunned("tagline");
+  const signInTab = usePunned("signInTab");
+  const signUpTab = usePunned("signUpTab");
+  const submitSignIn = usePunned("submitSignIn");
+  const submitSignUp = usePunned("submitSignUp");
+  const pleaseWait = usePunned("pleaseWait");
+  const emailLabel = usePunned("emailLabel");
+  const passwordLabel = usePunned("passwordLabel");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,9 +60,9 @@ export default function LoginPage() {
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center bg-gradient-to-b from-amber-50 to-stone-100 px-4 py-16">
       <div className="mb-6 text-center">
         <div className="mb-2 text-5xl">💩</div>
-        <h1 className="text-xl font-semibold text-stone-900">Poop Tracker</h1>
+        <h1 className="text-xl font-semibold text-stone-900">{appTitle}</h1>
         <p className="mt-1 text-sm text-stone-500">
-          Log it daily. See your trend. See how you stack up.
+          {tagline}
         </p>
       </div>
 
@@ -65,7 +75,7 @@ export default function LoginPage() {
               mode === "signin" ? "bg-white text-stone-900 shadow-sm" : "text-stone-500"
             }`}
           >
-            Sign in
+            {signInTab}
           </button>
           <button
             type="button"
@@ -74,7 +84,7 @@ export default function LoginPage() {
               mode === "signup" ? "bg-white text-stone-900 shadow-sm" : "text-stone-500"
             }`}
           >
-            Sign up
+            {signUpTab}
           </button>
         </div>
 
@@ -88,7 +98,7 @@ export default function LoginPage() {
 
         <form onSubmit={onSubmit}>
           <label htmlFor="email" className="mb-1 block text-sm text-stone-500">
-            Email
+            {emailLabel}
           </label>
           <input
             id="email"
@@ -101,7 +111,7 @@ export default function LoginPage() {
           />
 
           <label htmlFor="password" className="mb-1 block text-sm text-stone-500">
-            Password
+            {passwordLabel}
           </label>
           <input
             id="password"
@@ -119,7 +129,7 @@ export default function LoginPage() {
             disabled={loading || !isSupabaseConfigured}
             className="w-full rounded-xl bg-amber-800 px-4 py-3 text-base font-semibold text-white hover:bg-amber-900 disabled:opacity-50"
           >
-            {loading ? "Please wait..." : mode === "signup" ? "🚀 Create account" : "👋 Sign in"}
+            {loading ? pleaseWait : mode === "signup" ? submitSignUp : submitSignIn}
           </button>
         </form>
 
