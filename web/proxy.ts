@@ -24,6 +24,21 @@ export default async function proxy(request: NextRequest) {
     },
   });
 
+  // getSession() only decodes the cookie locally — no network call.
+  // getUser() always hits Supabase over the network to verify the token,
+  // which was happening on every single request regardless of whether the
+  // token was anywhere near expiring. Only pay for that round-trip when
+  // the token is actually close to expiry; otherwise let it pass through.
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  const expiresAt = session?.expires_at ?? 0;
+
+  if (session && expiresAt - nowInSeconds > 60) {
+    return response;
+  }
+
   // Refreshes the auth token if it's expired. Route-level pages still do
   // their own getUser() check; this just keeps cookies in sync.
   await supabase.auth.getUser();
