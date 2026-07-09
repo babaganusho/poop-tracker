@@ -19,6 +19,7 @@ export type Entry = {
 
 export type UserStats = {
   username: string;
+  avatar_url: string | null;
   entries_count: number;
   avg_weight_grams: number | null;
   max_weight_grams: number | null;

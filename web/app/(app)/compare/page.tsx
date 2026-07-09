@@ -54,6 +54,14 @@ export default async function ComparePage() {
                 <span className="w-7 shrink-0 text-center text-lg">
                   {MEDALS[i] ?? <span className="text-sm text-stone-400">#{i + 1}</span>}
                 </span>
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-amber-100 text-lg">
+                  {u.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={u.avatar_url} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    "💩"
+                  )}
+                </div>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium text-stone-900">
                     {u.username}
