@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import EntryForm from "./entry-form";
 import type { Entry } from "@/lib/types";
 
@@ -14,11 +14,11 @@ export default async function LogPage({
 }: {
   searchParams: Promise<{ date?: string }>;
 }) {
-  const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getAuthUser();
   if (!user) redirect("/login");
+  const supabase = await createClient();
 
   const { date: requestedDate } = await searchParams;
   const date = requestedDate ?? todayLocalISO();

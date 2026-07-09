@@ -1,15 +1,15 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import AvatarUpload from "./avatar-upload";
 import EditProfileForm from "./edit-profile-form";
 import type { Profile } from "@/lib/types";
 
 export default async function EditProfilePage() {
-  const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getAuthUser();
   if (!user) redirect("/login");
+  const supabase = await createClient();
 
   const { data: profile } = await supabase
     .from("profiles")

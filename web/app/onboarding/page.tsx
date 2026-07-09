@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { pick } from "@/lib/puns";
 import OnboardingForm from "./onboarding-form";
@@ -9,12 +9,12 @@ export const dynamic = "force-dynamic";
 export default async function OnboardingPage() {
   if (!isSupabaseConfigured) redirect("/login");
 
-  const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getAuthUser();
 
   if (!user) redirect("/login");
+  const supabase = await createClient();
 
   const { data: profile } = await supabase
     .from("profiles")
